@@ -1,6 +1,8 @@
+require('dotenv').config()
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient } = require('mongodb');
+
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -28,11 +30,17 @@ async function run() {
 
         // collections
         const userCollection = client.db("TaskNimbus").collection("users");
+        const taskCollection = client.db("TaskNimbus").collection("tasks");
 
 
         // user related api
         app.post("/users", async (req, res) => {
             const user = req.body;
+            const existingUser = await userCollection.findOne({email: user.email})
+            if(existingUser){
+                return res.send("User already exist")
+            }
+
             const result = await userCollection.insertOne(user);
             res.send(result);
         })
@@ -43,6 +51,32 @@ async function run() {
             res.send(result);
         })
 
+        // task related api
+
+
+        app.post("/tasks", async (req, res) => {
+            const task = req.body;
+            const result = await taskCollection.insertOne(task);
+            res.send(result);
+        });
+
+        // API to fetch tasks
+        app.get("/tasks/:email", async (req, res) => {
+            const email = req.params.email;
+            const cursor = taskCollection.find({email: email})
+            const result = await cursor.toArray();
+            res.json(result);
+        });
+
+        // API to update tasks
+        app.put("/tasks", async (req, res) => {
+            const { taskId, category, position } = req.body;
+            await taskCollection.updateOne(
+                { _id: taskId },
+                { $set: { category, position } }
+            );
+            res.sendStatus(200);
+        });
 
 
 
