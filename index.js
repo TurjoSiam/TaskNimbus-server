@@ -40,7 +40,6 @@ async function run() {
             if(existingUser){
                 return res.send("User already exist")
             }
-
             const result = await userCollection.insertOne(user);
             res.send(result);
         })
@@ -51,8 +50,8 @@ async function run() {
             res.send(result);
         })
 
-        // task related api
 
+        // task related api
 
         app.post("/tasks", async (req, res) => {
             const task = req.body;
@@ -60,7 +59,6 @@ async function run() {
             res.send(result);
         });
 
-        // API to fetch tasks
         app.get("/tasks/:email", async (req, res) => {
             const email = req.params.email;
             const cursor = taskCollection.find({email: email})
